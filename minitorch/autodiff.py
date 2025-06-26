@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Iterable, List, Tuple
+from typing import Any, Iterable, Tuple
 
 from typing_extensions import Protocol
 
@@ -23,7 +23,13 @@ def central_difference(f: Any, *vals: Any, arg: int = 0, epsilon: float = 1e-6) 
         An approximation of $f'_i(x_0, \ldots, x_{n-1})$
     """
     # TODO: Implement for Task 1.1.
-    raise NotImplementedError("Need to implement for Task 1.1")
+    vals_plus_epsilon = list(vals)
+    vals_plus_epsilon[arg] = vals_plus_epsilon[arg] + epsilon
+
+    vals_minus_epsilon = list(vals)
+    vals_minus_epsilon[arg] = vals_minus_epsilon[arg] - epsilon
+
+    return (f(*vals_plus_epsilon) - f(*vals_minus_epsilon)) / (2 * epsilon)
 
 
 variable_count = 1
@@ -98,3 +104,9 @@ class Context:
     @property
     def saved_tensors(self) -> Tuple[Any, ...]:
         return self.saved_values
+
+
+if __name__ == "__main__":
+    from operators import id
+
+    d = central_difference(id, 5, arg=0)
