@@ -46,7 +46,6 @@ def mul(a: float, b: float) -> float:
         float: The product of a and b
 
     """
-    """Multiplies two numbers"""
     return a * b
 
 
@@ -64,7 +63,6 @@ def id(input: float) -> float:
         The same value as the input.
 
     """
-    """Returns the input value unchanged."""
     return input
 
 
@@ -88,7 +86,6 @@ def add(a: float, b: float) -> float:
         0.0
 
     """
-    """Adds two numbers."""
     return a + b
 
 
@@ -111,11 +108,10 @@ def neg(a: float) -> float:
         2
 
     """
-    """Negates a number."""
-    return -a
+    return float(-a)
 
 
-def lt(a: float, b: float) -> bool:
+def lt(a: float, b: float) -> float:
     """Compares two floating-point numbers and returns True if the first is less than the second.
 
     Args:
@@ -127,9 +123,9 @@ def lt(a: float, b: float) -> bool:
 
     """
     if a < b:
-        return True
+        return 1.0
     else:
-        return False
+        return 0.0
 
 
 def eq(a: float, b: float) -> bool:
@@ -146,9 +142,9 @@ def eq(a: float, b: float) -> bool:
 
     """
     if a == b:
-        return True
+        return 1.0
     else:
-        return False
+        return 0.0
 
 
 def max(a: float, b: float) -> float:
@@ -229,7 +225,7 @@ def relu(x: float) -> float:
         float: The input value if it is greater than 0, otherwise 0.
 
     """
-    return max(0, x)
+    return max(0.0, x)
 
 
 def log(x: float) -> float:
