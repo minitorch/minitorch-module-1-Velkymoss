@@ -6,6 +6,7 @@ from typing import Any, Iterable, Optional, Sequence, Tuple, Type, Union
 import numpy as np
 
 from .autodiff import Context, Variable, backpropagate, central_difference
+from .operators import zipWith
 from .scalar_functions import (
     EQ,
     LT,
@@ -169,15 +170,19 @@ class Scalar:
 
     def chain_rule(self, d_output: Any) -> Iterable[Tuple[Variable, Any]]:
         h = self.history
+
         assert h is not None
         assert h.last_fn is not None
         assert h.ctx is not None
 
         # TODO: Implement for Task 1.3.
-
-        
-
-        raise NotImplementedError("Need to implement for Task 1.3")
+        variables = h.inputs
+        derivatives = h.last_fn.backward(h.ctx, d_output)
+        zipper = zipWith(lambda variable, derivative: (variable, derivative))
+        return [
+            (variable, derivative)
+            for variable, derivative in zipper(variables, derivatives)
+        ]
 
     def backward(self, d_output: Optional[float] = None) -> None:
         """
