@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, Iterable, Tuple
 
+from collections import deque
 from typing_extensions import Protocol
 
 # ## Task 1.1
@@ -68,7 +69,31 @@ def topological_sort(variable: Variable) -> Iterable[Variable]:
         Non-constant Variables in topological order starting from the right.
     """
     # TODO: Implement for Task 1.4.
-    raise NotImplementedError("Need to implement for Task 1.4")
+
+    sorted_nodes = deque()
+
+    permanent_mark = set()  
+    temporary_mark = set() 
+
+    # while exists nodes without a permanent mark do
+        # select an unmarked node n
+        # visit(n)
+
+    def visit(node):
+        if node in permanent_mark:
+            return
+        if node in temporary_mark:
+            raise ValueError("Cycle detected in computation graph")
+        
+        temporary_mark.add(node)
+
+        # for each node m with an edge from n to m do
+            # visit(m)
+
+        # mark n with a permanent mark
+        # add n to head of L
+        
+    return sorted_nodes
 
 
 def backpropagate(variable: Variable, deriv: Any) -> None:
