@@ -4,6 +4,7 @@ import pytest
 from hypothesis import given
 from hypothesis.strategies import lists
 
+import minitorch
 from minitorch import MathTest
 from minitorch.operators import (
     add,
@@ -22,7 +23,6 @@ from minitorch.operators import (
     relu,
     relu_back,
     sigmoid,
-    sum,
 )
 
 from .strategies import assert_close, small_floats
@@ -33,7 +33,7 @@ from .strategies import assert_close, small_floats
 @pytest.mark.task0_1
 @given(small_floats, small_floats)
 def test_same_as_python(x: float, y: float) -> None:
-    "Check that the main operators all return the same value of the python version"
+    """Check that the main operators all return the same value of the python version"""
     assert_close(mul(x, y), x * y)
     assert_close(add(x, y), x + y)
     assert_close(neg(x), -x)
@@ -69,7 +69,7 @@ def test_id(a: float) -> None:
 @pytest.mark.task0_1
 @given(small_floats)
 def test_lt(a: float) -> None:
-    "Check that a - 1.0 is always less than a"
+    """Check that a - 1.0 is always less than a"""
     assert lt(a - 1.0, a) == 1.0
     assert lt(a, a - 1.0) == 0.0
 
@@ -107,40 +107,53 @@ def test_sigmoid(a: float) -> None:
     * It crosses 0 at 0.5
     * It is  strictly increasing.
     """
-    raise NotImplementedError("Need to include this file from past assignment.")
+    # TODO: Implement for Task 0.2.
+
+    value = sigmoid(a)
+
+    assert 0 <= value <= 1
+    assert 1 - value == pytest.approx(sigmoid(-a))
+    assert sigmoid(0) == 0.5
+    if -30 < a < 30:
+        assert value < sigmoid(a + 1e-2)
 
 
 @pytest.mark.task0_2
 @given(small_floats, small_floats, small_floats)
 def test_transitive(a: float, b: float, c: float) -> None:
-    "Test the transitive property of less-than (a < b and b < c implies a < c)"
-    raise NotImplementedError("Need to include this file from past assignment.")
+    """Test the transitive property of less-than (a < b and b < c implies a < c)"""
+    # TODO: Implement for Task 0.2.
+    if lt(a, b) and lt(b, c):
+        assert lt(a, c)
 
 
 @pytest.mark.task0_2
 def test_symmetric() -> None:
-    """
-    Write a test that ensures that :func:`minitorch.operators.mul` is symmetric, i.e.
+    """Write a test that ensures that :func:`minitorch.operators.mul` is symmetric, i.e.
     gives the same value regardless of the order of its input.
     """
-    raise NotImplementedError("Need to include this file from past assignment.")
+    # TODO: Implement for Task 0.2.
+    assert mul(0.5, -0.3) == mul(-0.3, 0.5)
 
 
 @pytest.mark.task0_2
 def test_distribute() -> None:
-    r"""
-    Write a test that ensures that your operators distribute, i.e.
+    r"""Write a test that ensures that your operators distribute, i.e.
     :math:`z \times (x + y) = z \times x + z \times y`
     """
-    raise NotImplementedError("Need to include this file from past assignment.")
+    # TODO: Implement for Task 0.2.
+    z = 2
+    x = 0.3
+    y = -0.6
+    assert mul(z, add(x, y)) == add(mul(z, x), mul(z, y))
 
 
 @pytest.mark.task0_2
-def test_other() -> None:
-    """
-    Write a test that ensures some other property holds for your functions.
-    """
-    raise NotImplementedError("Need to include this file from past assignment.")
+def test_inv_zero_division_error() -> None:
+    """Write a test that ensures some other property holds for your functions."""
+    # TODO: Implement for Task 0.2.
+    with pytest.raises(ZeroDivisionError):
+        inv(0)
 
 
 # ## Task 0.3  - Higher-order functions
@@ -164,17 +177,19 @@ def test_zip_with(a: float, b: float, c: float, d: float) -> None:
     lists(small_floats, min_size=5, max_size=5),
 )
 def test_sum_distribute(ls1: List[float], ls2: List[float]) -> None:
-    """
-    Write a test that ensures that the sum of `ls1` plus the sum of `ls2`
+    """Write a test that ensures that the sum of `ls1` plus the sum of `ls2`
     is the same as the sum of each element of `ls1` plus each element of `ls2`.
     """
-    raise NotImplementedError("Need to include this file from past assignment.")
+    # TODO: Implement for Task 0.3.
+    left_side = minitorch.operators.sum(ls1) + minitorch.operators.sum(ls2)
+    right_side = minitorch.operators.sum(list(addLists(ls1, ls2)))
+    assert_close(left_side, right_side)
 
 
 @pytest.mark.task0_3
 @given(lists(small_floats))
 def test_sum(ls: List[float]) -> None:
-    assert_close(sum(ls), sum(ls))
+    assert_close(sum(ls), minitorch.operators.sum(ls))
 
 
 @pytest.mark.task0_3

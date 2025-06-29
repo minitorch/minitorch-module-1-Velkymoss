@@ -44,7 +44,7 @@ class ModuleA4(minitorch.Module):
 
 @pytest.mark.task0_4
 def test_stacked_demo() -> None:
-    "Check that each of the properties match"
+    """Check that each of the properties match"""
     mod = ModuleA1()
     np = dict(mod.named_parameters())
 
@@ -95,7 +95,7 @@ class Module3(minitorch.Module):
 @pytest.mark.task0_4
 @given(med_ints, med_ints)
 def test_module(size_a: int, size_b: int) -> None:
-    "Check the properties of a single module"
+    """Check the properties of a single module"""
     module = Module2()
     module.eval()
     assert not module.training
@@ -116,7 +116,7 @@ def test_module(size_a: int, size_b: int) -> None:
 @pytest.mark.task0_4
 @given(med_ints, med_ints, small_floats)
 def test_stacked_module(size_a: int, size_b: int, val: float) -> None:
-    "Check the properties of a stacked module"
+    """Check the properties of a stacked module"""
     module = Module1(size_a, size_b, val)
     module.eval()
     assert not module.training
@@ -182,3 +182,90 @@ def test_parameter() -> None:
     t2 = MockParam()
     q.update(t2)
     assert t2.x
+
+
+#### additional test for more complex tree for named_parameters
+
+
+class ModuleAA(minitorch.Module):
+    def __init__(self):
+        super().__init__()
+        self.p1 = minitorch.Parameter(1)
+
+
+class ModuleAB(minitorch.Module):
+    def __init__(self):
+        super().__init__()
+        self.p2 = minitorch.Parameter(2)
+
+
+class ModuleBA(minitorch.Module):
+    def __init__(self):
+        super().__init__()
+        self.p3 = minitorch.Parameter(3)
+
+
+class ModuleA(minitorch.Module):
+    def __init__(self):
+        super().__init__()
+        self.aa = ModuleAA()
+        self.ab = ModuleAB()
+
+
+class ModuleB(minitorch.Module):
+    def __init__(self):
+        super().__init__()
+        self.ba = ModuleBA()
+
+
+class RootModule(minitorch.Module):
+    def __init__(self):
+        super().__init__()
+        self.a = ModuleA()
+        self.b = ModuleB()
+
+
+@pytest.mark.task0_4
+def test_complex_named_parameters() -> None:
+    mod = RootModule()
+    np = dict(mod.named_parameters())
+
+    expected_keys = {"a.aa.p1", "a.ab.p2", "b.ba.p3"}
+
+    print(np.keys())
+
+    assert set(np.keys()) == expected_keys
+
+    assert np["a.aa.p1"].value == 1
+    assert np["a.ab.p2"].value == 2
+    assert np["b.ba.p3"].value == 3
+
+
+### test for checking if cycle detection is implemented correctly
+
+
+class ModuleCycleTest(minitorch.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.p = minitorch.Parameter(42)
+        self.a = ModuleCycleChild()
+        # Create a cycle: a_cycle points back to this module
+        self.a.a_cycle = self
+
+
+class ModuleCycleChild(minitorch.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.p_child = minitorch.Parameter(99)
+
+
+@pytest.mark.task0_4
+def test_cycle_breaks_named_parameters():
+    mod = ModuleCycleTest()
+
+    # If named_parameters lacks cycle detection, this will cause infinite loop or crash
+    np = dict(mod.named_parameters())
+
+    assert np["p"].value == 42
+    assert np["a.p_child"].value == 99
+    assert np["a.a_cycle.p"].value == 42
