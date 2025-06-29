@@ -1,7 +1,7 @@
+from collections import deque
 from dataclasses import dataclass
 from typing import Any, Iterable, Tuple
 
-from collections import deque
 from typing_extensions import Protocol
 
 # ## Task 1.1
@@ -72,28 +72,26 @@ def topological_sort(variable: Variable) -> Iterable[Variable]:
 
     sorted_nodes = deque()
 
-    permanent_mark = set()  
-    temporary_mark = set() 
+    permanent_mark = set()
+    temporary_mark = set()
 
-    # while exists nodes without a permanent mark do
-        # select an unmarked node n
-        # visit(n)
-
-    def visit(node):
-        if node in permanent_mark:
+    def visit_node(node: Variable):
+        if node in permanent_mark or node.is_constant():
             return
         if node in temporary_mark:
-            raise ValueError("Cycle detected in computation graph")
-        
+            raise ValueError("Graph has at least one cycle")
+
         temporary_mark.add(node)
 
-        # for each node m with an edge from n to m do
-            # visit(m)
+        for parent in node.parents:
+            visit_node(parent)
 
-        # mark n with a permanent mark
-        # add n to head of L
-        
-    return sorted_nodes
+        permanent_mark.add(node)
+        sorted_nodes.appendleft(node)
+
+    visit_node(variable)
+
+    return list(sorted_nodes)
 
 
 def backpropagate(variable: Variable, deriv: Any) -> None:
