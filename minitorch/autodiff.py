@@ -76,17 +76,17 @@ def topological_sort(variable: Variable) -> Iterable[Variable]:
     temporary_mark = set()
 
     def visit_node(node: Variable):
-        if node in permanent_mark or node.is_constant():
+        if node.unique_id in permanent_mark or node.is_constant():
             return
-        if node in temporary_mark:
+        if node.unique_id in temporary_mark:
             raise ValueError("Graph has at least one cycle")
 
-        temporary_mark.add(node)
+        temporary_mark.add(node.unique_id)
 
         for parent in node.parents:
             visit_node(parent)
 
-        permanent_mark.add(node)
+        permanent_mark.add(node.unique_id)
         sorted_nodes.appendleft(node)
 
     visit_node(variable)
@@ -106,7 +106,34 @@ def backpropagate(variable: Variable, deriv: Any) -> None:
     No return. Should write to its results to the derivative values of each leaf through `accumulate_derivative`.
     """
     # TODO: Implement for Task 1.4.
-    raise NotImplementedError("Need to implement for Task 1.4")
+
+    ordered_que = topological_sort(variable)
+    reversed_que: list[Variable] = list(reversed(ordered_que))
+
+    current_derivatives: dict[str, tuple[Variable, Any]] = {
+        variable.unique_id: (variable, deriv)
+    }
+    print(current_derivatives)
+    for node in reversed_que:
+        current_pair = current_derivatives.get(node.unique_id)
+        d_output = 0
+
+        if d_output is None:
+            continue
+
+        if node.is_leaf():
+            node.accumulate_derivative(d_output)
+            continue
+
+        partial_derivatives = node.chain_rule(d_output)
+
+        for variable, derivative in partial_derivatives:
+            if variable.unique_id not in current_derivatives:
+                current_derivatives[variable.unique_id] = (variable, derivative)
+            else:
+                current_derivatives[variable.unique_id][1] = (
+                    current_derivatives[variable.unique_id][1] + derivative
+                )
 
 
 @dataclass
