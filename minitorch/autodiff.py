@@ -108,15 +108,13 @@ def backpropagate(variable: Variable, deriv: Any) -> None:
     # TODO: Implement for Task 1.4.
 
     ordered_que = topological_sort(variable)
-    reversed_que: list[Variable] = list(reversed(ordered_que))
 
     current_derivatives: dict[str, tuple[Variable, Any]] = {
         variable.unique_id: (variable, deriv)
     }
-    print(current_derivatives)
-    for node in reversed_que:
-        current_pair = current_derivatives.get(node.unique_id)
-        d_output = 0
+    
+    for node in ordered_que:
+        _, d_output = current_derivatives.get(node.unique_id)
 
         if d_output is None:
             continue
@@ -131,8 +129,9 @@ def backpropagate(variable: Variable, deriv: Any) -> None:
             if variable.unique_id not in current_derivatives:
                 current_derivatives[variable.unique_id] = (variable, derivative)
             else:
-                current_derivatives[variable.unique_id][1] = (
-                    current_derivatives[variable.unique_id][1] + derivative
+                current_derivatives[variable.unique_id] = (
+                    current_derivatives[variable.unique_id][0],
+                    current_derivatives[variable.unique_id][1] + derivative,
                 )
 
 

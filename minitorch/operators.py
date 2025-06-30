@@ -418,8 +418,15 @@ def zipWith(
         container_1: Iterable[float], container_2: Iterable[float]
     ) -> list[float]:
         res = []
-        c1_iter = iter(container_1)
-        c2_iter = iter(container_2)
+        try:
+            c1_iter = iter(container_1)
+        except TypeError:
+            c1_iter = iter([container_1])
+        
+        try:
+            c2_iter = iter(container_2)
+        except TypeError:
+            c2_iter = iter([container_2])
 
         while True:
             try:
