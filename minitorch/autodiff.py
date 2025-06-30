@@ -129,6 +129,10 @@ def backpropagate(variable: Variable, deriv: Any) -> None:
             if variable.unique_id not in current_derivatives:
                 current_derivatives[variable.unique_id] = (variable, derivative)
             else:
+            # Accounting for multiple uses of a node as input:
+            # If a variable is used in multiple inputs (e.g., f(g(x), g(x))),
+            # then by the multivariate chain rule, we must accumulate its
+            # partial derivatives from all paths.
                 current_derivatives[variable.unique_id] = (
                     current_derivatives[variable.unique_id][0],
                     current_derivatives[variable.unique_id][1] + derivative,
