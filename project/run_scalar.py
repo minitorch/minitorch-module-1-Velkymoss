@@ -46,10 +46,15 @@ class Linear(minitorch.Module):
                 )
             )
 
-    def forward(self, inputs):
+    def forward(self, inputs) -> list[float]:
         # TODO: Implement for Task 1.5.
         in_size = len(self.weights)
         out_size = len(self.bias)
+        outputs = []
+        for i in range(in_size):
+            for j in range(out_size):
+                outputs.append(self.weights[i][j].data * inputs[i] + self.bias[j].data)
+        return outputs
 
 
 def default_log_fn(epoch, total_loss, correct, losses):
