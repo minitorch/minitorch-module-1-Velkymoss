@@ -9,7 +9,7 @@ import minitorch
 
 
 class Network(minitorch.Module):
-    def __init__(self, hidden_layers):
+    def __init__(self, hidden_layers: int):
         super().__init__()
         # TODO: Implement for Task 1.5.
         self.layer_1 = Linear(2, hidden_layers)
@@ -23,10 +23,13 @@ class Network(minitorch.Module):
 
 
 class Linear(minitorch.Module):
-    def __init__(self, in_size, out_size):
+    def __init__(self, in_size: int, out_size: int):
         super().__init__()
-        self.weights = []  # for each in_size index i we create j out_size weights
-        self.bias = []  # we create out_size j parameters
+        self.weights: list[
+            list[minitorch.Scalar]
+        ] = []  # for each in_size index i we create j out_size weights
+        self.bias: list[minitorch.Scalar] = []  # we create out_size j parameters
+
         for i in range(in_size):
             self.weights.append([])
             for j in range(out_size):
@@ -35,6 +38,7 @@ class Linear(minitorch.Module):
                         f"weight_{i}_{j}", minitorch.Scalar(2 * (random.random() - 0.5))
                     )
                 )
+
         for j in range(out_size):
             self.bias.append(
                 self.add_parameter(
@@ -44,14 +48,8 @@ class Linear(minitorch.Module):
 
     def forward(self, inputs):
         # TODO: Implement for Task 1.5.
-        num_parameters = len(self.weights)
-
-        if num_parameters != len(self.bias):
-            raise ValueError("Weights array and bias array don't have same length!")
-
-        return [
-            self.weights[i] * inputs[i] + self.bias[i] for i in range(num_parameters)
-        ]
+        in_size = len(self.weights)
+        out_size = len(self.bias)
 
 
 def default_log_fn(epoch, total_loss, correct, losses):
