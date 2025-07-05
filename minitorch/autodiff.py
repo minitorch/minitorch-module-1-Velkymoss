@@ -1,5 +1,6 @@
+from collections import deque
 from dataclasses import dataclass
-from typing import Any, Iterable, List, Tuple
+from typing import Any, Iterable, Tuple
 
 from typing_extensions import Protocol
 
@@ -23,7 +24,13 @@ def central_difference(f: Any, *vals: Any, arg: int = 0, epsilon: float = 1e-6) 
         An approximation of $f'_i(x_0, \ldots, x_{n-1})$
     """
     # TODO: Implement for Task 1.1.
-    raise NotImplementedError("Need to implement for Task 1.1")
+    vals_plus_epsilon = list(vals)
+    vals_plus_epsilon[arg] = vals_plus_epsilon[arg] + epsilon
+
+    vals_minus_epsilon = list(vals)
+    vals_minus_epsilon[arg] = vals_minus_epsilon[arg] - epsilon
+
+    return (f(*vals_plus_epsilon) - f(*vals_minus_epsilon)) / (2 * epsilon)
 
 
 variable_count = 1
@@ -62,7 +69,29 @@ def topological_sort(variable: Variable) -> Iterable[Variable]:
         Non-constant Variables in topological order starting from the right.
     """
     # TODO: Implement for Task 1.4.
-    raise NotImplementedError("Need to implement for Task 1.4")
+
+    sorted_nodes = deque()
+
+    permanent_mark = set()
+    temporary_mark = set()
+
+    def visit_node(node: Variable):
+        if node.unique_id in permanent_mark or node.is_constant():
+            return
+        if node.unique_id in temporary_mark:
+            raise ValueError("Graph has at least one cycle")
+
+        temporary_mark.add(node.unique_id)
+
+        for parent in node.parents:
+            visit_node(parent)
+
+        permanent_mark.add(node.unique_id)
+        sorted_nodes.appendleft(node)
+
+    visit_node(variable)
+
+    return list(sorted_nodes)
 
 
 def backpropagate(variable: Variable, deriv: Any) -> None:
@@ -77,7 +106,37 @@ def backpropagate(variable: Variable, deriv: Any) -> None:
     No return. Should write to its results to the derivative values of each leaf through `accumulate_derivative`.
     """
     # TODO: Implement for Task 1.4.
-    raise NotImplementedError("Need to implement for Task 1.4")
+
+    ordered_que = topological_sort(variable)
+
+    current_derivatives: dict[str, tuple[Variable, Any]] = {
+        variable.unique_id: (variable, deriv)
+    }
+    
+    for node in ordered_que:
+        _, d_output = current_derivatives.get(node.unique_id)
+
+        if d_output is None:
+            continue
+
+        if node.is_leaf():
+            node.accumulate_derivative(d_output)
+            continue
+
+        partial_derivatives = node.chain_rule(d_output)
+
+        for variable, derivative in partial_derivatives:
+            if variable.unique_id not in current_derivatives:
+                current_derivatives[variable.unique_id] = (variable, derivative)
+            else:
+            # Accounting for multiple uses of a node as input:
+            # If a variable is used in multiple inputs (e.g., f(g(x), g(x))),
+            # then by the multivariate chain rule, we must accumulate its
+            # partial derivatives from all paths.
+                current_derivatives[variable.unique_id] = (
+                    current_derivatives[variable.unique_id][0],
+                    current_derivatives[variable.unique_id][1] + derivative,
+                )
 
 
 @dataclass
@@ -98,3 +157,9 @@ class Context:
     @property
     def saved_tensors(self) -> Tuple[Any, ...]:
         return self.saved_values
+
+
+if __name__ == "__main__":
+    from operators import id
+
+    d = central_difference(id, 5, arg=0)
